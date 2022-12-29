@@ -17,6 +17,33 @@
             "compilerPath": "/usr/bin/clang",
             "cStandard": "c11",
             "cppStandard": "c++14"
+        },
+        {
+            "name": "Win32",
+            "forcedInclude": [
+                "${workspaceFolder}/build/config/sdkconfig.h"
+            ],
+            "includePath": [
+                "D:/esp/**",
+                "${workspaceFolder}/**"
+            ],
+            "defines": [
+                "_DEBUG",
+                "UNICODE",
+                "_UNICODE"
+            ],
+            "compilerPath": "D:/esp/espressif/tools/xtensa-esp32-elf/esp-2022r1-11.2.0/xtensa-esp32-elf/bin/xtensa-esp32-elf-gcc.exe",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "gcc-x86",
+            "mergeConfigurations": false,
+            "browse": {
+                "path": [
+                    "D:/esp/**",
+                    "${workspaceFolder}/**"
+                ],
+                "limitSymbolsToIncludedHeaders": false
+            }
         }
     ],
     "version": 4

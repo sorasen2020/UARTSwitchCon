@@ -11,7 +11,7 @@
 #include <string.h>
 
 #include "driver/gpio.h"
-#include "driver/periph_ctrl.h"
+#include "esp_private/periph_ctrl.h"
 #include "driver/spi_master.h"
 #include "driver/uart.h"
 #include "esp_bt.h"
@@ -23,6 +23,8 @@
 #include "esp_log.h"
 #include "esp_system.h"
 #include "esp_timer.h"
+#include "esp_random.h"
+#include "esp_mac.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 #include "freertos/task.h"
@@ -37,7 +39,9 @@
 #define JOYCON_L 0x01
 #define JOYCON_R 0x02
 
-#define CONTROLLER_TYPE JOYCON_L
+#define CONTROLLER_TYPE PRO_CON
+// #define CONTROLLER_TYPE JOYCON_L
+// #define CONTROLLER_TYPE JOYCON_R
 
 // Buttons and sticks
 #define A_DPAD_CENTER 0x08
@@ -138,11 +142,12 @@ uint8_t crc8_ccitt_update(uint8_t inCrc, uint8_t inData) {
 }
 
 void uart_init() {
-  uart_config.baud_rate = 19200;
-  uart_config.data_bits = UART_DATA_8_BITS;
-  uart_config.parity = UART_PARITY_DISABLE;
-  uart_config.stop_bits = UART_STOP_BITS_1;
-  uart_config.flow_ctrl = UART_HW_FLOWCTRL_DISABLE;
+  uart_config.baud_rate  = 115200;
+  uart_config.data_bits  = UART_DATA_8_BITS;
+  uart_config.parity     = UART_PARITY_DISABLE;
+  uart_config.stop_bits  = UART_STOP_BITS_1;
+  uart_config.flow_ctrl  = UART_HW_FLOWCTRL_DISABLE;
+  uart_config.source_clk = UART_SCLK_DEFAULT;
 
   uart_param_config(UART_NUM, &uart_config);
   uart_set_pin(UART_NUM, UART_TXD_PIN, UART_RXD_PIN, UART_PIN_NO_CHANGE,
@@ -169,7 +174,7 @@ static void uart_task() {
   ESP_LOGI("hi", "Hi from core %d!. uart_task\n", xPortGetCoreID());
   // uart_flush(UART_NUM);
   while (1) {
-    int len = uart_read_bytes(UART_NUM, uart_data, BUF_SIZE, portTICK_RATE_MS);
+    int len = uart_read_bytes(UART_NUM, uart_data, BUF_SIZE, portTICK_PERIOD_MS);
 
     if (len > 0) {
       ESP_LOGI("uart in", "length: %d - %X", len, uart_data[0]);
@@ -840,11 +845,11 @@ void set_bt_address()
         uint8_t bt_addr[8];
 
         err = nvs_open("storage", NVS_READWRITE, &my_handle);
-        if (err != ESP_OK) return err;
+        if (err != ESP_OK) return;
 
         size_t addr_size = 0;
         err = nvs_get_blob(my_handle, "mac_addr", NULL, &addr_size);
-        if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) return err;
+        if (err != ESP_OK && err != ESP_ERR_NVS_NOT_FOUND) return;
 
         if (addr_size > 0) {
                 err = nvs_get_blob(my_handle, "mac_addr", bt_addr, &addr_size);
